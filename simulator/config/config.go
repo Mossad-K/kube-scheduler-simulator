@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"strconv"
@@ -137,6 +138,10 @@ func getPort() (int, error) {
 
 // getKubeAPIServerURL gets KubeAPIServerURL from environment variable first, if empty from the config file.
 func getKubeAPIServerURL() string {
+	url := os.Getenv("KUBE_APISERVER_URL")
+	if url == "" && configYaml.KubeAPIServerURL != "" {
+		return configYaml.KubeAPIServerURL
+	}
 	p := os.Getenv("KUBE_API_PORT")
 	if p == "" {
 		p = strconv.Itoa(configYaml.KubeAPIPort)
@@ -144,7 +149,6 @@ func getKubeAPIServerURL() string {
 			p = "3131"
 		}
 	}
-
 	h := os.Getenv("KUBE_API_HOST")
 	if h == "" {
 		h = configYaml.KubeAPIHost
@@ -152,7 +156,8 @@ func getKubeAPIServerURL() string {
 			h = "127.0.0.1"
 		}
 	}
-	return h + ":" + p
+
+	return fmt.Sprintf("%s:%s", h, p)
 }
 
 // getExternalSchedulerEnabled gets ExternalSchedulerEnabled from environment variable first,
